@@ -24,9 +24,10 @@ I enjoy connecting systems, working with data, and building tools that make comp
 
 | [📚 SQLTrain](https://github.com/Eige90/SQLtrain) | [💬 WhatsApp Messenger Local](https://github.com/Eige90/whatsapp-messenger) |
 | :--- | :--- |
-| An interactive SQL learning and practice project. Its roadmap includes an in-browser editor, exercises and a sample database. | A personal, local-first project for scheduled and personalized WhatsApp messages, recurring schedules and local data storage. |
-| **Next.js · React · TypeScript · Tailwind CSS · SQLite WASM** | **JavaScript · SQLite · Chromium · Local automation** |
-| [Explore SQLTrain →](https://github.com/Eige90/SQLtrain) | [Explore WhatsApp Messenger →](https://github.com/Eige90/whatsapp-messenger) |
+| An interactive SQL learning platform with **100 guided lessons**, a **20-level SQL Murder Mystery** featuring 100 investigation tasks, and a responsive SQL workbench. | A **local-first WhatsApp automation tool (v1.4.2)** for scheduled and personalized messages, including optional Gemini-generated text. |
+| **Highlights:** browser-based SQLite database manager; SQL query validation; Excel/CSV import; progress, XP and badges. SQL queries and imported files stay on the user's device. | **Highlights:** one-time, daily, weekly and yearly schedules; selected weekdays; missed-message review after restart; retry handling and a local contact book. Personal data stays in local SQLite storage. |
+| **Stack:** Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · SQLite WASM · Monaco Editor | **Stack:** JavaScript · SQLite · Chromium · WhatsApp Web · optional Gemini Web |
+| [Try SQLTrain live ↗](https://eige90.github.io/SQLtrain/) · [Source code ↗](https://github.com/Eige90/SQLtrain) | [Source code & setup ↗](https://github.com/Eige90/whatsapp-messenger) |
 
 ## 🧰 Technologies & tools
 
