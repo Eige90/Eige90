@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Eige90/AboutEige90/main/assets/hero.svg" alt="Daniel Eigner — Full-Stack Developer | Automation, Python, Cloud and DevOps" width="100%" />
+  <img src="assets/hero.svg" alt="Daniel Eigner — Full-Stack Developer | Automation, Python, Cloud and DevOps" width="100%" />
 </p>
 
 <p align="center">
@@ -66,7 +66,7 @@ I enjoy connecting systems, working with data, and building tools that make comp
 ### 📊 API & Analytics Toolkit
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Eige90/AboutEige90/main/assets/tools-banner.svg" alt="Tools: Postman for API development and testing, Power BI for analytics and reporting, Excel for data analysis" width="100%" />
+  <img src="assets/tools-banner.svg" alt="Tools: Postman for API development and testing, Power BI for analytics and reporting, Excel for data analysis" width="100%" />
 </p>
 
 <p align="center">
