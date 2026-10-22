@@ -10,22 +10,25 @@
 
 ## 👋 About me
 
-I'm **Daniel**, a full-stack developer from Germany who enjoys building practical software, exploring new technologies, and making repetitive work a little easier.
+I'm **Daniel**, a full-stack developer from Germany with a passion for practical software, system integration, and automation.
 
-My interests span **Python, web development, APIs, automation, DevOps and cloud engineering**. I also enjoy hands-on projects with **Arduino and Raspberry Pi**.
+I enjoy connecting systems, working with data, and building tools that make complex processes easier to manage. My technical interests include **Python, C++, JavaScript/TypeScript, SQL, REST APIs, DevOps and cloud engineering**.
 
-- 🧩 **I like building:** useful tools, integrations, web applications and automation workflows.
-- ⚙️ **I enjoy working with:** Python, C++, JavaScript/TypeScript and SQL.
-- ☁️ **I explore:** infrastructure, developer tooling, Linux and cloud technologies.
-- 🚀 **My approach:** keep learning, build thoughtfully and improve things iteratively.
+- 🔧 **What I work with:** application development, data processing, APIs and workflow automation.
+- ⚡ **Industry experience:** I have worked for a **Charge Point Operator (CPO)** in the electric vehicle charging sector.
+- ☁️ **What interests me:** modern infrastructure, Linux, developer tooling and cloud technologies.
+- 🛠️ **Beyond software:** experimenting with Arduino and Raspberry Pi.
+- 📚 **My mindset:** learn continuously, build thoughtfully and improve what already exists.
 
-## ✨ Featured projects
+## ✨ Selected public project
 
-| [📚 SQLTrain](https://github.com/Eige90/SQLtrain) | [💬 WhatsApp Messenger Local](https://github.com/Eige90/whatsapp-messenger) |
-| :--- | :--- |
-| An interactive SQL learning and practice application. The project roadmap includes an in-browser editor, exercises and a sample database. | A personal, local-first automation tool for scheduled and personalized messages, with recurring schedules and local data storage. |
-| **Next.js · TypeScript · React · Tailwind CSS · SQLite WASM** | **JavaScript · SQLite · Chromium · Local automation** |
-| [Explore the repository →](https://github.com/Eige90/SQLtrain) | [Explore the repository →](https://github.com/Eige90/whatsapp-messenger) |
+### [📚 SQLTrain — Interactive SQL learning](https://github.com/Eige90/SQLtrain)
+
+A web application project focused on learning and practicing SQL. Its planned features include an in-browser SQL editor, interactive exercises, and a sample database.
+
+**Stack:** Next.js · React · TypeScript · Tailwind CSS · SQLite WebAssembly
+
+[Explore SQLTrain →](https://github.com/Eige90/SQLtrain)
 
 ## 🧰 Technologies & tools
 
@@ -61,9 +64,7 @@ My interests span **Python, web development, APIs, automation, DevOps and cloud 
 ![Arduino](https://img.shields.io/badge/Arduino-00878F?style=flat-square&logo=arduino&logoColor=white)
 ![Raspberry Pi](https://img.shields.io/badge/Raspberry_Pi-A22846?style=flat-square&logo=raspberrypi&logoColor=white)
 
-## 📌 Explore more
-
-Check out my [public repositories](https://github.com/Eige90?tab=repositories) for more experiments, tools and projects.
+---
 
 <p align="center">
   <sub>Build useful things. Keep learning. Make it better.</sub>
