@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/hero.svg" alt="Daniel Eigner — Full-Stack Developer | Automation, Python, Cloud and DevOps" width="100%" />
+  <img src="https://raw.githubusercontent.com/Eige90/AboutEige90/main/assets/hero.svg" alt="Daniel Eigner — Full-Stack Developer | Automation, Python, Cloud and DevOps" width="100%" />
 </p>
 
 <p align="center">
@@ -20,15 +20,13 @@ I enjoy connecting systems, working with data, and building tools that make comp
 - 🛠️ **Beyond software:** experimenting with Arduino and Raspberry Pi.
 - 📚 **My mindset:** learn continuously, build thoughtfully and improve what already exists.
 
-## ✨ Selected public project
+## ✨ Selected public projects
 
-### [📚 SQLTrain — Interactive SQL learning](https://github.com/Eige90/SQLtrain)
-
-A web application project focused on learning and practicing SQL. Its planned features include an in-browser SQL editor, interactive exercises, and a sample database.
-
-**Stack:** Next.js · React · TypeScript · Tailwind CSS · SQLite WebAssembly
-
-[Explore SQLTrain →](https://github.com/Eige90/SQLtrain)
+| [📚 SQLTrain](https://github.com/Eige90/SQLtrain) | [💬 WhatsApp Messenger Local](https://github.com/Eige90/whatsapp-messenger) |
+| :--- | :--- |
+| An interactive SQL learning and practice project. Its roadmap includes an in-browser editor, exercises and a sample database. | A personal, local-first project for scheduled and personalized WhatsApp messages, recurring schedules and local data storage. |
+| **Next.js · React · TypeScript · Tailwind CSS · SQLite WASM** | **JavaScript · SQLite · Chromium · Local automation** |
+| [Explore SQLTrain →](https://github.com/Eige90/SQLtrain) | [Explore WhatsApp Messenger →](https://github.com/Eige90/whatsapp-messenger) |
 
 ## 🧰 Technologies & tools
 
@@ -40,7 +38,7 @@ A web application project focused on learning and practicing SQL. Its planned fe
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![SQL](https://img.shields.io/badge/SQL-336791?style=flat-square&logo=postgresql&logoColor=white)
 
-**Web, back end & data**
+**Web, Backend & Data**
 
 ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white)
@@ -50,7 +48,7 @@ A web application project focused on learning and practicing SQL. Its planned fe
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
 
-**DevOps & infrastructure**
+**DevOps & Infrastructure**
 
 ![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=000000)
@@ -59,10 +57,20 @@ A web application project focused on learning and practicing SQL. Its planned fe
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white)
 ![Jenkins](https://img.shields.io/badge/Jenkins-D24939?style=flat-square&logo=jenkins&logoColor=white)
 
-**Hardware & tinkering**
+**Hardware & Tinkering**
 
 ![Arduino](https://img.shields.io/badge/Arduino-00878F?style=flat-square&logo=arduino&logoColor=white)
 ![Raspberry Pi](https://img.shields.io/badge/Raspberry_Pi-A22846?style=flat-square&logo=raspberrypi&logoColor=white)
+
+### 📊 API & Analytics Toolkit
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Eige90/AboutEige90/main/assets/tools-banner.svg" alt="Tools: Postman for API development and testing, Power BI for analytics and reporting, Excel for data analysis" width="100%" />
+</p>
+
+<p align="center">
+  <a href="https://www.postman.com/">Postman</a> · <a href="https://powerbi.microsoft.com/">Microsoft Power BI</a> · <a href="https://www.microsoft.com/microsoft-365/excel">Microsoft Excel</a>
+</p>
 
 ---
 
