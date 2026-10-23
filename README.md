@@ -117,3 +117,7 @@ Die Startbefehle und Installationsschritte stehen jeweils in der README des Proj
 - [ ] Projektlinks und veröffentlichte Versionen mit den Repositories abgleichen.
 - [ ] Projektauswahl bei neuen stabilen Releases aktualisieren.
 
+
+## GitHub Pages / Website status
+
+This repository renders the GitHub profile README; it is not itself a deployed app. A separate GitHub Pages site would require a dedicated publication. / Dieses Repository stellt die GitHub-Profil-README bereit und ist keine bereitgestellte Anwendung. Eine eigene GitHub-Pages-Seite benötigt eine separate Veröffentlichung.
