@@ -78,3 +78,13 @@ I enjoy connecting systems, working with data, and building tools that make comp
 <p align="center">
   <sub>Build useful things. Keep learning. Make it better.</sub>
 </p>
+
+---
+
+## Deutsch
+
+Ich entwickle Software und Automatisierungen mit Schwerpunkt auf Python, JavaScript/TypeScript, SQL, APIs, Cloud und DevOps. Zu meinen öffentlichen Projekten gehören [SQLTrain](https://github.com/Eige90/SQLtrain), [WhatsApp Messenger Local](https://github.com/Eige90/whatsapp-messenger) und [CareAssistant](https://github.com/Eige90/CareAssistant).
+
+### Projekte starten
+
+Die Startbefehle und Installationsschritte stehen jeweils in der README des Projekt-Repositories. Dieses Repository (`Eige90/Eige90`) enthält die Profilseite und ist keine separat ausführbare Anwendung.
