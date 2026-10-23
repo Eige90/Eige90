@@ -10,6 +10,8 @@
   <img src="https://img.shields.io/badge/Based_in-Germany-2563EB?style=flat-square&logo=googlemaps&logoColor=white" alt="Based in Germany" />
 </p>
 
+**Version:** Profile README — not a versioned application / Profil-README — keine eigenständig versionierte Anwendung.
+
 ## 👋 About me
 
 I'm **Daniel**, a full-stack developer from Germany with a passion for practical software, system integration, and automation.
@@ -30,6 +32,12 @@ I enjoy connecting systems, working with data, and building tools that make comp
 | **Highlights:** browser-based SQLite database manager; SQL query validation; Excel/CSV import; progress, XP and badges. SQL queries and imported files stay on the user's device. | **Highlights:** one-time, daily, weekly and yearly schedules; selected weekdays; missed-message review after restart; retry handling and a local contact book. Personal data stays in local SQLite storage. |
 | **Stack:** Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · SQLite WASM · Monaco Editor | **Stack:** JavaScript · SQLite · Chromium · WhatsApp Web · optional Gemini Web |
 | [Try SQLTrain live ↗](https://eige90.github.io/SQLtrain/) · [Source code ↗](https://github.com/Eige90/SQLtrain) | [Source code & setup ↗](https://github.com/Eige90/whatsapp-messenger) |
+
+### More projects
+
+- [Car Rental / Septem](https://github.com/Eige90/Septem) — Python API and separate frontend; in development
+- [CareAssistant](https://github.com/Eige90/CareAssistant) — desktop case and calendar manager, v0.6.0; in development
+- [Echidna](https://github.com/Eige90/Echidna) — static DevOps portfolio prototype
 
 ## 🧰 Technologies & tools
 
@@ -83,10 +91,29 @@ I enjoy connecting systems, working with data, and building tools that make comp
 
 ---
 
+
+## Roadmap / Open verification items
+
+- [ ] Keep project links and published versions aligned with each repository.
+- [ ] Update project selection when stable releases are available.
+
 ## Deutsch
+
+### Weitere Projekte
+
+- [Car Rental / Septem](https://github.com/Eige90/Septem) — Autovermietungsprojekt mit Python-API und separatem Frontend; in Entwicklung
+- [CareAssistant](https://github.com/Eige90/CareAssistant) — Termin- und Aktenverwaltung, v0.6.0; in Entwicklung
+- [Echidna](https://github.com/Eige90/Echidna) — statischer DevOps-Portfolio-Prototyp
+
 
 Ich entwickle Software und Automatisierungen mit Schwerpunkt auf Python, JavaScript/TypeScript, SQL, APIs, Cloud und DevOps. Zu meinen öffentlichen Projekten gehören [SQLTrain](https://github.com/Eige90/SQLtrain), [WhatsApp Messenger Local](https://github.com/Eige90/whatsapp-messenger) und [CareAssistant](https://github.com/Eige90/CareAssistant).
 
 ### Projekte starten
 
 Die Startbefehle und Installationsschritte stehen jeweils in der README des Projekt-Repositories. Dieses Repository (`Eige90/Eige90`) enthält die Profilseite und ist keine separat ausführbare Anwendung.
+
+## Roadmap / Offene Prüfpunkte
+
+- [ ] Projektlinks und veröffentlichte Versionen mit den Repositories abgleichen.
+- [ ] Projektauswahl bei neuen stabilen Releases aktualisieren.
+
