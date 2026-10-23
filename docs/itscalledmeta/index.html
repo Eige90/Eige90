@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="vision-api-base" content="" />
+  <title>Metadata Webapp (Local Vision)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    button { margin: 6px 6px 0 0; padding: 8px 12px; cursor: pointer; border: none; border-radius: 4px; background: #007bff; color: white; }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    button.danger { background: #dc3545; }
+    button.danger:hover { background: #c82333; }
+    pre { background:#111; color:#eee; padding:10px; overflow:auto; border-radius: 4px; font-size: 12px; }
+    #media-test-area { margin-top: 10px; }
+    #camera-wrap { position: relative; display: inline-block; max-width: 100%; }
+    #camera-preview { display:block; border-radius: 8px; max-width: 100%; height: auto; }
+    #audio-level-bar-wrapper { max-width: 100%; }
+    .typing-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-width:980px; }
+    #overlay-canvas { position:absolute; left:0; top:0; pointer-events:none; }
+    .hint { color:#666; font-size: 12px; margin: 8px 0; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 10px; max-width: 980px; }
+    .panel { border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #f9f9f9; }
+    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    label { font-size: 12px; color:#333; display:flex; gap:6px; align-items:center; }
+    input[type="number"]{ width: 90px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; }
+    input[type="checkbox"]{ transform: scale(1.1); }
+    input[type="text"], textarea { border: 1px solid #ccc; border-radius: 4px; }
+    .pill { font-size: 12px; padding: 2px 8px; border-radius: 999px; background:#e3f2fd; border:1px solid #90caf9; font-weight: 600; }
+    #vision-overlay-img { max-width: 100%; border-radius: 8px; border: 1px solid #333; background:#000; display:none; }
+    .small { font-size: 12px; color:#666; }
+    .status { padding: 8px; border-radius: 4px; margin: 10px 0; font-weight: 600; }
+    .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    h2 { border-bottom: 2px solid #007bff; padding-bottom: 8px; margin-top: 30px; }
+    h3 { color: #555; margin-top: 20px; }
+    @media (max-width: 600px) {
+      body { margin: 12px; }
+      .typing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Geräte- & System-Infos</h1>
+  <p><strong>Lokale Gerätezeit:</strong> <span id="device-time"></span></p>
+
+  <hr/>
+
+  <h2>1. System / Hardware</h2>
+  <pre id="system-hardware"></pre>
+
+  <h2>2. Display / Screen</h2>
+  <pre id="display-screen"></pre>
+
+  <h2>3. Performance</h2>
+  <pre id="performance-info"></pre>
+
+  <h2>4. Audio / Video APIs</h2>
+  <pre id="audio-video"></pre>
+
+  <h2>5. Internet / Netzwerk</h2>
+  <pre id="network-info"></pre>
+
+  <h2>6. Sonstiges</h2>
+  <pre id="misc-info"></pre>
+
+  <h3>6.a User-Interaktionen (ohne Permission)</h3>
+  <pre id="interaction-info"></pre>
+
+  <h3>6.b Bewegungs- & Lage-Sensoren</h3>
+  <pre id="motion-sensors"></pre>
+
+  <h3>6.c Texteingabe (History bleibt)</h3>
+  <div class="typing-grid">
+    <div>
+      <label><strong>Input</strong></label>
+      <input
+        id="typing-input"
+        type="text"
+        placeholder="Hier tippen…"
+        autocomplete="off"
+        style="width:100%; padding:8px;"
+      />
+    </div>
+    <div>
+      <label><strong>History (alles bisher Getippte)</strong></label>
+      <textarea
+        id="typing-history"
+        rows="4"
+        readonly
+        style="width:100%; padding:8px;"
+      ></textarea>
+      <button id="clear-typing-history" class="danger" style="margin-top: 4px;">Clear History</button>
+    </div>
+  </div>
+
+  <hr/>
+
+  <h2>Erweiterte Daten (mit Erlaubnis)</h2>
+
+  <button id="request-permissions-btn">📋 Übersicht Permissions / Media-Devices</button>
+  <button id="btn-geo">📍 Geolocation testen</button>
+  <button id="btn-battery">🔋 Akku-Infos testen</button>
+  <button id="btn-media">🎥 Kamera/Mikrofon starten</button>
+  <button id="btn-media-stop" class="danger" disabled>⏹️ Kamera/Mikrofon stoppen</button>
+  <button id="btn-youtube">▶️ Testvideo öffnen (YouTube)</button>
+  <button id="btn-local-ai">🧠 Snapshot → Local AI</button>
+  <button id="btn-reset-tracks" class="danger">🔄 Reset Tracking</button>
+
+  <div id="api-status" class="status info" style="display:none;"></div>
+
+  <h3>6.1 Geolocation</h3>
+  <pre id="geo-info"></pre>
+
+  <h3>6.2 Akku-Infos</h3>
+  <pre id="battery-info"></pre>
+
+  <h3>6.3 Permissions / Kamera / Mikrofon</h3>
+  <pre id="permissions-info"></pre>
+
+  <h3>6.4 Vision (lokal am PC, via Python API)</h3>
+  <div class="hint" id="vision-backend-info"></div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="row">
+        <span class="pill">Detection Controls</span>
+        <span class="small">Wähle welche Modelle verwendet werden sollen</span>
+      </div>
+
+      <div class="row" style="margin-top:8px;">
+        <label><input type="checkbox" id="cfg-do-yolo" checked> YOLO Object Detection</label>
+        <label><input type="checkbox" id="cfg-do-pose"> MediaPipe Pose</label>
+        <label><input type="checkbox" id="cfg-do-hands"> MediaPipe Hands</label>
+        <label><input type="checkbox" id="cfg-do-summary" checked> Semantic Summary</label>
+        <label><input type="checkbox" id="cfg-do-overlay" checked> Overlay Image</label>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <span class="pill">YOLO Parameters</span>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <label>Confidence <input type="number" id="cfg-yolo-conf" min="0" max="1" step="0.05" value="0.35"></label>
+        <label>IoU <input type="number" id="cfg-yolo-iou" min="0" max="1" step="0.05" value="0.50"></label>
+        <label>Image Size <input type="number" id="cfg-yolo-imgsz" min="320" max="1280" step="32" value="640"></label>
+        <label>Max Detections <input type="number" id="cfg-yolo-maxdet" min="1" max="200" step="1" value="50"></label>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <span class="pill">Overlay Parameters</span>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <label>JPEG Quality <input type="number" id="cfg-overlay-quality" min="30" max="95" step="1" value="85"></label>
+        <label>Max Labels <input type="number" id="cfg-overlay-maxlabels" min="1" max="200" step="1" value="30"></label>
+      </div>
+
+      <div class="small" style="margin-top:12px;">
+        💡 <strong>Tipps:</strong><br>
+        • False-Positives? → Erhöhe Confidence auf 0.45-0.50<br>
+        • Langsam? → Reduziere Image Size auf 416 oder 320<br>
+        • Mehr Details? → Aktiviere Pose & Hands (langsamer)
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <span class="pill">Overlay Image (vom Backend)</span>
+        <span class="small">Annotiertes Bild mit Detections</span>
+      </div>
+      <div style="margin-top:10px;">
+        <img id="vision-overlay-img" alt="Vision Overlay" />
+      </div>
+    </div>
+  </div>
+
+  <h3>Vision Results</h3>
+  <pre id="vision-caption"></pre>
+
+  <div id="media-test-area">
+    <p><strong>Kamera-Vorschau:</strong></p>
+
+    <div id="camera-wrap">
+      <video id="camera-preview" autoplay playsinline style="max-width:640px; max-height:480px; background:#000;"></video>
+      <canvas id="overlay-canvas"></canvas>
+    </div>
+
+    <p><strong>Audio-Level (Mikrofon):</strong></p>
+    <div id="audio-level-bar-wrapper" style="width:640px; height:20px; border:1px solid #444; background:#eee; border-radius: 4px; overflow: hidden;">
+      <div id="audio-level-bar" style="width:0%; height:100%; background:#4caf50; transition: width 0.1s;"></div>
+    </div>
+    <p id="audio-level-text">Audio-Level: 0.000</p>
+  </div>
+
+  <script>
+    // =========================
+    // Helpers
+    // =========================
+    function logObject(obj) { return JSON.stringify(obj, null, 2); }
+    function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+    
+    function showStatus(message, type = 'info') {
+      const el = document.getElementById('api-status');
+      if (!el) return;
+      el.textContent = message;
+      el.className = `status ${type}`;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // DataURL -> Blob
+    function dataURLtoBlob(dataURL) {
+      const [meta, base64] = dataURL.split(",");
+      const mime = (meta.match(/data:(.*);base64/) || [])[1] || "application/octet-stream";
+      const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+      return new Blob([bytes], { type: mime });
+    }
+
+    // =========================
+    // 0) Lokale Gerätezeit
+    // =========================
+    function updateDeviceTime() {
+      const now = new Date();
+      setText("device-time", now.toString());
+    }
+
+    // 1) SYSTEM / HARDWARE
+    function collectSystemHardware() {
+      const nav = navigator || {};
+      const sys = {
+        userAgent: nav.userAgent || null,
+        platform: nav.platform || null,
+        hardwareConcurrency: nav.hardwareConcurrency || null,
+        deviceMemory_GB: nav.deviceMemory || null,
+        vendor: nav.vendor || null,
+        language: nav.language || null,
+        languages: nav.languages || null,
+        cookieEnabled: nav.cookieEnabled || null,
+      };
+      setText("system-hardware", logObject(sys));
+    }
+
+    // 2) DISPLAY / SCREEN
+    function collectDisplayScreen() {
+      const s = window.screen || {};
+      const display = {
+        screenWidth: s.width || null,
+        screenHeight: s.height || null,
+        availWidth: s.availWidth || null,
+        availHeight: s.availHeight || null,
+        colorDepth: s.colorDepth || null,
+        pixelDepth: s.pixelDepth || null,
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio || null,
+      };
+      setText("display-screen", logObject(display));
+    }
+
+    // 3) PERFORMANCE
+    function collectPerformanceInfo() {
+      const p = window.performance || {};
+      const navEntries = p.getEntriesByType ? p.getEntriesByType("navigation") : [];
+      const nav = navEntries && navEntries[0] ? navEntries[0] : null;
+
+      const perf = {
+        timeOrigin: p.timeOrigin || null,
+        now_ms: p.now ? p.now() : null,
+        navigationType: nav ? nav.type : (p.navigation ? p.navigation.type : null),
+        memory: p.memory ? {
+          jsHeapSizeLimit: p.memory.jsHeapSizeLimit,
+          totalJSHeapSize: p.memory.totalJSHeapSize,
+          usedJSHeapSize: p.memory.usedJSHeapSize
+        } : null
+      };
+      setText("performance-info", logObject(perf));
+    }
+
+    // 4) AUDIO / VIDEO APIs
+    function collectAudioVideoInfo() {
+      const mediaDevices = navigator.mediaDevices;
+      const info = {
+        mediaDevicesSupported: !!mediaDevices,
+        getUserMediaSupported: !!(mediaDevices && mediaDevices.getUserMedia),
+        enumerateDevicesSupported: !!(mediaDevices && mediaDevices.enumerateDevices),
+      };
+      setText("audio-video", logObject(info));
+    }
+
+    // 5) INTERNET / NETZWERK
+    function collectNetworkInfo() {
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+      const net = {
+        online: navigator.onLine,
+        connectionSupported: !!connection,
+        connection: connection ? {
+          effectiveType: connection.effectiveType,
+          downlink_Mbps: connection.downlink,
+          rtt_ms: connection.rtt,
+          saveData: connection.saveData
+        } : null
+      };
+      setText("network-info", logObject(net));
+    }
+
+    // 6) SONSTIGES
+    function collectMiscInfo() {
+      const misc = {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        doNotTrack: navigator.doNotTrack || window.doNotTrack || null,
+        serviceWorkerSupported: "serviceWorker" in navigator,
+        deviceOrientationSupported: "DeviceOrientationEvent" in window,
+        deviceMotionSupported: "DeviceMotionEvent" in window,
+        maxTouchPoints: navigator.maxTouchPoints || 0,
+        vendorSub: navigator.vendorSub || null,
+        pageVisibilityState: document.visibilityState || null,
+        windowFocused: document.hasFocus()
+      };
+      setText("misc-info", logObject(misc));
+    }
+
+    // ========= USER-INTERAKTION =========
+    const interactionState = {
+      clickCount: 0, scrollEventCount: 0, mouseMoveCount: 0, mouseOverCount: 0, keyDownCount: 0,
+      resizeCount: 0, wheelEventCount: 0, copyCount: 0, pasteCount: 0,
+      touchStartCount: 0, touchMoveCount: 0, touchEndCount: 0, touchCancelCount: 0,
+      fileUploadCount: 0, downloadClickCount: 0,
+      lastClick: null, lastMousePosition: { x: null, y: null }, lastMouseOverTag: null,
+      lastResize: null, lastWheel: null, lastCopy: null, lastPaste: null, lastTouch: null,
+      lastUploadInfo: null, lastDownloadInfo: null,
+      maxScrollY: 0, maxScrollDepthPercent: 0,
+      isPageVisible: document.visibilityState === "visible",
+      isWindowFocused: document.hasFocus(),
+      lastVisibilityChange: null, lastFocusChange: null,
+      idleMs: 0,
+      lastActivityTimestamp: performance.now ? performance.now() : Date.now(),
+      eventsFired: {
+        click: 0, scroll: 0, mousemove: 0, mouseover: 0, keydown: 0,
+        visibilitychange: 0, focus: 0, blur: 0,
+        resize: 0, wheel: 0, copy: 0, paste: 0,
+        touchstart: 0, touchmove: 0, touchend: 0, touchcancel: 0,
+        fileUpload: 0, downloadClick: 0
+      }
+    };
+
+    function markActivity() { interactionState.lastActivityTimestamp = performance.now ? performance.now() : Date.now(); }
+
+    function updateScrollDepth() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const docHeight = (document.documentElement.scrollHeight || document.body.scrollHeight || 0) - window.innerHeight;
+      interactionState.maxScrollY = Math.max(interactionState.maxScrollY, scrollTop);
+
+      let depthPercent = 0;
+      if (docHeight > 0) depthPercent = (interactionState.maxScrollY / docHeight) * 100;
+      interactionState.maxScrollDepthPercent = Math.max(interactionState.maxScrollDepthPercent, depthPercent);
+    }
+
+    function renderInteractionInfo() {
+      const now = performance.now ? performance.now() : Date.now();
+      interactionState.idleMs = now - interactionState.lastActivityTimestamp;
+
+      const readable = {
+        clickCount: interactionState.clickCount,
+        scrollEventCount: interactionState.scrollEventCount,
+        mouseMoveCount: interactionState.mouseMoveCount,
+        mouseOverCount: interactionState.mouseOverCount,
+        keyDownCount: interactionState.keyDownCount,
+        resizeCount: interactionState.resizeCount,
+        wheelEventCount: interactionState.wheelEventCount,
+        copyCount: interactionState.copyCount,
+        pasteCount: interactionState.pasteCount,
+        touchStartCount: interactionState.touchStartCount,
+        touchMoveCount: interactionState.touchMoveCount,
+        touchEndCount: interactionState.touchEndCount,
+        touchCancelCount: interactionState.touchCancelCount,
+        fileUploadCount: interactionState.fileUploadCount,
+        downloadClickCount: interactionState.downloadClickCount,
+        lastClick: interactionState.lastClick,
+        lastMousePosition: interactionState.lastMousePosition,
+        lastMouseOverTag: interactionState.lastMouseOverTag,
+        lastResize: interactionState.lastResize,
+        lastWheel: interactionState.lastWheel,
+        lastCopy: interactionState.lastCopy,
+        lastPaste: interactionState.lastPaste,
+        lastTouch: interactionState.lastTouch,
+        lastUploadInfo: interactionState.lastUploadInfo,
+        lastDownloadInfo: interactionState.lastDownloadInfo,
+        maxScrollY_px: Math.round(interactionState.maxScrollY),
+        maxScrollDepth_percent: Math.round(interactionState.maxScrollDepthPercent * 10) / 10,
+        isPageVisible: interactionState.isPageVisible,
+        isWindowFocused: interactionState.isWindowFocused,
+        lastVisibilityChange: interactionState.lastVisibilityChange,
+        lastFocusChange: interactionState.lastFocusChange,
+        idleTime_ms: Math.round(interactionState.idleMs),
+        idleTime_seconds: Math.round(interactionState.idleMs / 1000),
+        eventsFired: interactionState.eventsFired
+      };
+
+      setText("interaction-info", logObject(readable));
+    }
+
+    // Event Listeners
+    window.addEventListener("click", (ev) => {
+      interactionState.clickCount++; interactionState.eventsFired.click++;
+      interactionState.lastClick = { x: ev.clientX, y: ev.clientY, targetTag: ev.target && ev.target.tagName, time: new Date().toString() };
+
+      let t = ev.target;
+      if (t && t.closest) {
+        const a = t.closest("a");
+        if (a && (a.hasAttribute("download") || /\.(zip|exe|pdf|mp4|mp3|mkv|iso)$/i.test(a.href))) {
+          interactionState.downloadClickCount++; interactionState.eventsFired.downloadClick++;
+          interactionState.lastDownloadInfo = { href: a.href, hasDownloadAttr: a.hasAttribute("download"), time: new Date().toString() };
+        }
+      }
+      markActivity();
+    }, { passive: true });
+
+    window.addEventListener("scroll", () => { interactionState.scrollEventCount++; interactionState.eventsFired.scroll++; updateScrollDepth(); markActivity(); }, { passive: true });
+    window.addEventListener("mousemove", (ev) => { interactionState.mouseMoveCount++; interactionState.eventsFired.mousemove++; interactionState.lastMousePosition = { x: ev.clientX, y: ev.clientY }; markActivity(); }, { passive: true });
+    window.addEventListener("mouseover", (ev) => { interactionState.mouseOverCount++; interactionState.eventsFired.mouseover++; interactionState.lastMouseOverTag = ev.target && ev.target.tagName; markActivity(); }, { passive: true });
+    window.addEventListener("keydown", () => { interactionState.keyDownCount++; interactionState.eventsFired.keydown++; markActivity(); });
+
+    document.addEventListener("visibilitychange", () => {
+      interactionState.eventsFired.visibilitychange++;
+      interactionState.isPageVisible = document.visibilityState === "visible";
+      interactionState.lastVisibilityChange = { state: document.visibilityState, time: new Date().toString() };
+      if (interactionState.isPageVisible) markActivity();
+    });
+
+    window.addEventListener("focus", () => { interactionState.eventsFired.focus++; interactionState.isWindowFocused = true; interactionState.lastFocusChange = { focused: true, time: new Date().toString() }; markActivity(); });
+    window.addEventListener("blur", () => { interactionState.eventsFired.blur++; interactionState.isWindowFocused = false; interactionState.lastFocusChange = { focused: false, time: new Date().toString() }; });
+
+    window.addEventListener("resize", () => { interactionState.resizeCount++; interactionState.eventsFired.resize++; interactionState.lastResize = { innerWidth: window.innerWidth, innerHeight: window.innerHeight, time: new Date().toString() }; markActivity(); });
+    window.addEventListener("wheel", (ev) => { interactionState.wheelEventCount++; interactionState.eventsFired.wheel++; interactionState.lastWheel = { deltaX: ev.deltaX, deltaY: ev.deltaY, deltaMode: ev.deltaMode, time: new Date().toString() }; markActivity(); }, { passive: true });
+
+    document.addEventListener("copy", () => { interactionState.copyCount++; interactionState.eventsFired.copy++; interactionState.lastCopy = { time: new Date().toString() }; markActivity(); });
+    document.addEventListener("paste", () => { interactionState.pasteCount++; interactionState.eventsFired.paste++; interactionState.lastPaste = { time: new Date().toString() }; markActivity(); });
+
+    function extractTouchInfo(ev) {
+      const firstTouch = ev.touches && ev.touches[0] ? ev.touches[0] : (ev.changedTouches && ev.changedTouches[0] ? ev.changedTouches[0] : null);
+      return { type: ev.type, touchCount: ev.touches ? ev.touches.length : null, clientX: firstTouch ? firstTouch.clientX : null, clientY: firstTouch ? firstTouch.clientY : null, time: new Date().toString() };
+    }
+    window.addEventListener("touchstart", (ev) => { interactionState.touchStartCount++; interactionState.eventsFired.touchstart++; interactionState.lastTouch = extractTouchInfo(ev); markActivity(); }, { passive: true });
+    window.addEventListener("touchmove", (ev) => { interactionState.touchMoveCount++; interactionState.eventsFired.touchmove++; interactionState.lastTouch = extractTouchInfo(ev); markActivity(); }, { passive: true });
+    window.addEventListener("touchend", (ev) => { interactionState.touchEndCount++; interactionState.eventsFired.touchend++; interactionState.lastTouch = extractTouchInfo(ev); markActivity(); }, { passive: true });
+    window.addEventListener("touchcancel", (ev) => { interactionState.touchCancelCount++; interactionState.eventsFired.touchcancel++; interactionState.lastTouch = extractTouchInfo(ev); markActivity(); }, { passive: true });
+
+    document.addEventListener("change", (ev) => {
+      const t = ev.target;
+      if (t && t.tagName === "INPUT" && t.type === "file" && t.files) {
+        const fileCount = t.files.length;
+        interactionState.fileUploadCount += fileCount;
+        interactionState.eventsFired.fileUpload++;
+        interactionState.lastUploadInfo = { filesCount: fileCount, time: new Date().toString() };
+        markActivity();
+      }
+    });
+
+    setInterval(renderInteractionInfo, 1000);
+
+    // ========= BEWEGUNGS- & LAGE-SENSOREN =========
+    const motionSensorsState = {
+      deviceOrientationSupported: "DeviceOrientationEvent" in window,
+      deviceMotionSupported: "DeviceMotionEvent" in window,
+      genericAccelerometerSupported: "Accelerometer" in window,
+      genericGyroSupported: "Gyroscope" in window,
+      barometerSupported: "Barometer" in window,
+      orientation: null, motion: null, accelerometer: null, gyroscope: null, barometer: null,
+      lastUpdateTime: null, sensorErrors: []
+    };
+
+    function renderMotionSensors() {
+      const info = {
+        deviceOrientationSupported: motionSensorsState.deviceOrientationSupported,
+        deviceMotionSupported: motionSensorsState.deviceMotionSupported,
+        genericAccelerometerSupported: motionSensorsState.genericAccelerometerSupported,
+        genericGyroSupported: motionSensorsState.genericGyroSupported,
+        barometerSupported: motionSensorsState.barometerSupported,
+        orientation: motionSensorsState.orientation,
+        motion: motionSensorsState.motion,
+        accelerometer: motionSensorsState.accelerometer,
+        gyroscope: motionSensorsState.gyroscope,
+        barometer: motionSensorsState.barometer,
+        lastUpdateTime: motionSensorsState.lastUpdateTime
+      };
+
+      let statusMsg = "";
+      if (motionSensorsState.sensorErrors.length > 0) statusMsg = "Warnungen/Fehler: " + motionSensorsState.sensorErrors.join(" | ");
+      else if (motionSensorsState.orientation || motionSensorsState.motion || motionSensorsState.accelerometer || motionSensorsState.gyroscope || motionSensorsState.barometer) statusMsg = "OK: Mindestens ein Sensor liefert Daten.";
+      else statusMsg = "Noch keine Sensordaten empfangen – entweder noch keine Bewegung oder Sensoren werden vom Browser/OS blockiert.";
+
+      info.status = statusMsg;
+      setText("motion-sensors", logObject(info));
+    }
+
+    if (motionSensorsState.deviceOrientationSupported) {
+      window.addEventListener("deviceorientation", (ev) => {
+        motionSensorsState.orientation = { alpha_deg: ev.alpha, beta_deg: ev.beta, gamma_deg: ev.gamma, absolute: ev.absolute };
+        motionSensorsState.lastUpdateTime = new Date().toString();
+        renderMotionSensors();
+      });
+    } else motionSensorsState.sensorErrors.push("DeviceOrientationEvent nicht verfügbar.");
+
+    if (motionSensorsState.deviceMotionSupported) {
+      window.addEventListener("devicemotion", (ev) => {
+        motionSensorsState.motion = {
+          acceleration: ev.acceleration ? { x: ev.acceleration.x, y: ev.acceleration.y, z: ev.acceleration.z } : null,
+          accelerationIncludingGravity: ev.accelerationIncludingGravity ? { x: ev.accelerationIncludingGravity.x, y: ev.accelerationIncludingGravity.y, z: ev.accelerationIncludingGravity.z } : null,
+          rotationRate: ev.rotationRate ? { alpha_deg_s: ev.rotationRate.alpha, beta_deg_s: ev.rotationRate.beta, gamma_deg_s: ev.rotationRate.gamma } : null,
+          interval_ms: ev.interval
+        };
+        motionSensorsState.lastUpdateTime = new Date().toString();
+        renderMotionSensors();
+      });
+    } else motionSensorsState.sensorErrors.push("DeviceMotionEvent nicht verfügbar.");
+
+    if (motionSensorsState.genericAccelerometerSupported) {
+      try {
+        const acc = new Accelerometer({ frequency: 30 });
+        acc.addEventListener("reading", () => {
+          motionSensorsState.accelerometer = { x: acc.x, y: acc.y, z: acc.z };
+          motionSensorsState.lastUpdateTime = new Date().toString();
+          renderMotionSensors();
+        });
+        acc.addEventListener("error", (event) => { motionSensorsState.sensorErrors.push("Accelerometer-Fehler: " + event.error.name); renderMotionSensors(); });
+        acc.start();
+      } catch (e) { motionSensorsState.sensorErrors.push("Accelerometer-Startfehler: " + e.message); }
+    } else motionSensorsState.sensorErrors.push("Accelerometer-API nicht verfügbar.");
+
+    if (motionSensorsState.genericGyroSupported) {
+      try {
+        const gyro = new Gyroscope({ frequency: 30 });
+        gyro.addEventListener("reading", () => {
+          motionSensorsState.gyroscope = { x_deg_s: gyro.x, y_deg_s: gyro.y, z_deg_s: gyro.z };
+          motionSensorsState.lastUpdateTime = new Date().toString();
+          renderMotionSensors();
+        });
+        gyro.addEventListener("error", (event) => { motionSensorsState.sensorErrors.push("Gyroscope-Fehler: " + event.error.name); renderMotionSensors(); });
+        gyro.start();
+      } catch (e) { motionSensorsState.sensorErrors.push("Gyroscope-Startfehler: " + e.message); }
+    } else motionSensorsState.sensorErrors.push("Gyroscope-API nicht verfügbar.");
+
+    if (motionSensorsState.barometerSupported) {
+      try {
+        const baro = new Barometer({ frequency: 1 });
+        baro.addEventListener("reading", () => {
+          motionSensorsState.barometer = { pressure: baro.pressure };
+          motionSensorsState.lastUpdateTime = new Date().toString();
+          renderMotionSensors();
+        });
+        baro.addEventListener("error", (event) => { motionSensorsState.sensorErrors.push("Barometer-Fehler: " + event.error.name); renderMotionSensors(); });
+        baro.start();
+      } catch (e) { motionSensorsState.sensorErrors.push("Barometer-Startfehler: " + e.message); }
+    } else motionSensorsState.sensorErrors.push("Barometer-Sensor nicht verfügbar.");
+
+    renderMotionSensors();
+
+    // ========= ERWEITERTE DATEN =========
+    function requestGeolocation() {
+      if (!("geolocation" in navigator)) { setText("geo-info", "Geolocation wird von diesem Browser nicht unterstützt."); return; }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const coords = pos.coords;
+          const geoData = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            accuracy_m: coords.accuracy,
+            altitude: coords.altitude,
+            altitudeAccuracy_m: coords.altitudeAccuracy,
+            heading_deg: coords.heading,
+            speed_m_s: coords.speed,
+            timestamp: new Date(pos.timestamp).toString()
+          };
+          setText("geo-info", logObject(geoData));
+          showStatus("✅ Geolocation erfolgreich", "success");
+        },
+        (err) => {
+          const message = "Geolocation Fehler: " + err.message + " (Code " + err.code + ")";
+          setText("geo-info", message);
+          showStatus("❌ " + message, "error");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function requestBatteryInfo() {
+      if (!navigator.getBattery) { setText("battery-info", "Battery-API nicht verfügbar."); return; }
+
+      navigator.getBattery().then((battery) => {
+        function updateBattery() {
+          const batt = {
+            charging: battery.charging,
+            level_percent: Math.round(battery.level * 100),
+            chargingTime_s: battery.chargingTime,
+            dischargingTime_s: battery.dischargingTime
+          };
+          setText("battery-info", logObject(batt));
+        }
+        updateBattery();
+        battery.addEventListener("chargingchange", updateBattery);
+        battery.addEventListener("levelchange", updateBattery);
+        battery.addEventListener("chargingtimechange", updateBattery);
+        battery.addEventListener("dischargingtimechange", updateBattery);
+        showStatus("✅ Akku-Info erfolgreich", "success");
+      }).catch((err) => {
+        setText("battery-info", "Battery-API Fehler: " + err.message);
+        showStatus("❌ Battery-API Fehler", "error");
+      });
+    }
+
+    async function requestPermissionsOverview() {
+      const result = { permissions: {}, mediaDevices: [], notes: [] };
+
+      if ("permissions" in navigator && navigator.permissions.query) {
+        const permNames = ["geolocation", "notifications", "camera", "microphone"];
+        for (const name of permNames) {
+          try {
+            const status = await navigator.permissions.query({ name });
+            result.permissions[name] = { state: status.state };
+          } catch (e) {
+            result.permissions[name] = { state: "unbekannt", error: e.message };
+          }
+        }
+      } else result.notes.push("Permissions API nicht verfügbar.");
+
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          result.mediaDevices = devices.map(d => ({ kind: d.kind, label: d.label, deviceId: d.deviceId }));
+        } catch (e) { result.notes.push("enumerateDevices Fehler: " + e.message); }
+      } else result.notes.push("mediaDevices nicht verfügbar.");
+
+      setText("permissions-info", logObject(result));
+      showStatus("✅ Permissions abgerufen", "success");
+    }
+
+    // Kamera / Mikrofon Test
+    let mediaStream = null;
+    let audioContext = null;
+    let audioAnalyzer = null;
+    let audioDataArray = null;
+    let audioAnimationFrame = null;
+
+    async function testCameraAndMicrophone() {
+      const videoEl = document.getElementById("camera-preview");
+      const barEl = document.getElementById("audio-level-bar");
+      const textEl = document.getElementById("audio-level-text");
+      const btnMedia = document.getElementById("btn-media");
+      const btnStop = document.getElementById("btn-media-stop");
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showStatus("❌ getUserMedia nicht unterstützt", "error");
+        return;
+      }
+
+      if (mediaStream) {
+        showStatus("⚠️ Kamera läuft bereits", "info");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "environment" },
+          audio: true
+        });
+
+        mediaStream = stream;
+        if (videoEl) videoEl.srcObject = stream;
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 1024;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        audioAnalyzer = analyser;
+        audioDataArray = dataArray;
+
+        source.connect(analyser);
+
+        function updateAudioLevel() {
+          if (!audioAnalyzer || !audioDataArray) return;
+
+          audioAnalyzer.getByteTimeDomainData(audioDataArray);
+          let sum = 0;
+          for (let i = 0; i < audioDataArray.length; i++) {
+            const v = audioDataArray[i] - 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / audioDataArray.length);
+          const level = Math.min(1, rms / 50);
+
+          if (barEl) barEl.style.width = (level * 100).toFixed(1) + "%";
+          if (textEl) textEl.textContent = "Audio-Level: " + level.toFixed(3);
+
+          audioAnimationFrame = requestAnimationFrame(updateAudioLevel);
+        }
+
+        updateAudioLevel();
+        
+        if (btnMedia) btnMedia.disabled = true;
+        if (btnStop) btnStop.disabled = false;
+        
+        showStatus("✅ Kamera & Mikrofon aktiv", "success");
+        setText("vision-caption", "✅ Kamera läuft. Du kannst jetzt 'Snapshot → Local AI' drücken.");
+      } catch (e) {
+        showStatus("❌ Kamera/Mikrofon Fehler: " + e.message, "error");
+      }
+    }
+
+    function stopCameraAndMicrophone() {
+      const videoEl = document.getElementById("camera-preview");
+      const btnMedia = document.getElementById("btn-media");
+      const btnStop = document.getElementById("btn-media-stop");
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null;
+      }
+
+      if (videoEl) videoEl.srcObject = null;
+
+      if (audioAnimationFrame) {
+        cancelAnimationFrame(audioAnimationFrame);
+        audioAnimationFrame = null;
+      }
+
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+
+      audioAnalyzer = null;
+      audioDataArray = null;
+
+      if (btnMedia) btnMedia.disabled = false;
+      if (btnStop) btnStop.disabled = true;
+
+      clearOverlayCanvas();
+      showStatus("⏹️ Kamera & Mikrofon gestoppt", "info");
+    }
+
+    function openYouTubeTest() {
+      window.open("https://www.youtube.com/watch?v=d9MvSC3E6fo", "_blank", "noopener");
+    }
+
+    // ===========================
+    // Vision API
+    // ===========================
+    const configuredVisionBase = document.querySelector('meta[name="vision-api-base"]').content.trim().replace(/\/+$/, "");
+    const isLocalPage = location.protocol === "file:" || ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+    const BACKEND_BASE_URL = configuredVisionBase || (isLocalPage ? "http://127.0.0.1:8001" : "");
+    const BACKEND_ANALYZE_URL = BACKEND_BASE_URL ? `${BACKEND_BASE_URL}/analyze` : "";
+
+    function requireVisionBackend() {
+      if (BACKEND_BASE_URL) return true;
+      const message = "Für die Bildanalyse ist noch kein Vision-Server verbunden.";
+      showStatus(message, "info");
+      setText("vision-caption", message);
+      return false;
+    }
+
+    function getCfgBool(id, fallback=false) {
+      const el = document.getElementById(id);
+      return el ? !!el.checked : fallback;
+    }
+    function getCfgNum(id, fallback) {
+      const el = document.getElementById(id);
+      if (!el) return fallback;
+      const v = Number(el.value);
+      return Number.isFinite(v) ? v : fallback;
+    }
+
+    function clearOverlayImage() {
+      const img = document.getElementById("vision-overlay-img");
+      if (!img) return;
+      img.removeAttribute("src");
+      img.style.display = "none";
+    }
+
+    function renderOverlayImageFromResponse(out) {
+      const img = document.getElementById("vision-overlay-img");
+      if (!img) return;
+
+      const b64 = out?.overlay?.base64;
+      const ct = out?.overlay?.content_type || "image/jpeg";
+
+      if (typeof b64 === "string" && b64.length > 50) {
+        img.src = `data:${ct};base64,${b64}`;
+        img.style.display = "block";
+      } else {
+        img.style.display = "none";
+      }
+    }
+
+    function ensureOverlayCanvasSize() {
+      const videoEl = document.getElementById("camera-preview");
+      const canvasEl = document.getElementById("overlay-canvas");
+      if (!videoEl || !canvasEl) return;
+
+      const rect = videoEl.getBoundingClientRect();
+      canvasEl.width = Math.max(1, Math.round(rect.width));
+      canvasEl.height = Math.max(1, Math.round(rect.height));
+      canvasEl.style.width = rect.width + "px";
+      canvasEl.style.height = rect.height + "px";
+    }
+
+    function clearOverlayCanvas() {
+      const canvasEl = document.getElementById("overlay-canvas");
+      if (!canvasEl) return;
+      const ctx = canvasEl.getContext("2d");
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    }
+
+    function drawDetectionsOnOverlay(dets, srcW, srcH) {
+      const canvasEl = document.getElementById("overlay-canvas");
+      if (!canvasEl) return;
+
+      ensureOverlayCanvasSize();
+      const ctx = canvasEl.getContext("2d");
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+      if (!Array.isArray(dets) || dets.length === 0) return;
+
+      const scaleX = canvasEl.width / srcW;
+      const scaleY = canvasEl.height / srcH;
+
+      ctx.lineWidth = 2;
+      ctx.font = "12px Arial";
+
+      for (const d of dets) {
+        const box = d.box_xyxy;
+        if (!box || box.length !== 4) continue;
+
+        const x1 = clamp(box[0] * scaleX, 0, canvasEl.width);
+        const y1 = clamp(box[1] * scaleY, 0, canvasEl.height);
+        const x2 = clamp(box[2] * scaleX, 0, canvasEl.width);
+        const y2 = clamp(box[3] * scaleY, 0, canvasEl.height);
+
+        const color = d.label === "person" ? "lime" : "orange";
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+        const label = `${d.label || "obj"} ${(d.confidence ?? 0).toFixed(2)}`;
+        const labelWithId = d.track_id !== null ? `ID${d.track_id} ${label}` : label;
+        const ty = Math.max(12, y1 - 4);
+        ctx.fillText(labelWithId, x1 + 4, ty);
+      }
+    }
+
+    async function snapshotToLocalAI() {
+      if (!requireVisionBackend()) return;
+
+      const videoEl = document.getElementById("camera-preview");
+      if (!videoEl || !videoEl.srcObject) {
+        showStatus("❌ Kamera läuft nicht. Erst starten!", "error");
+        return;
+      }
+      if (videoEl.readyState < 2) {
+        showStatus("⚠️ Kamera ist noch nicht bereit", "info");
+        return;
+      }
+
+      clearOverlayImage();
+
+      const w = videoEl.videoWidth || 1280;
+      const h = videoEl.videoHeight || 720;
+
+      const snap = document.createElement("canvas");
+      snap.width = w;
+      snap.height = h;
+      const sctx = snap.getContext("2d");
+      sctx.drawImage(videoEl, 0, 0, w, h);
+
+      const dataUrl = snap.toDataURL("image/jpeg", 0.9);
+      const blob = dataURLtoBlob(dataUrl);
+
+      showStatus("⏳ Sende Snapshot an Local Vision API...", "info");
+      setText("vision-caption", "⏳ Analysiere Bild...");
+
+      try {
+        const form = new FormData();
+        form.append("image", blob, "snapshot.jpg");
+
+        form.append("do_yolo", String(getCfgBool("cfg-do-yolo", true)));
+        form.append("do_pose", String(getCfgBool("cfg-do-pose", false)));
+        form.append("do_hands", String(getCfgBool("cfg-do-hands", false)));
+        form.append("do_summary", String(getCfgBool("cfg-do-summary", true)));
+        form.append("do_overlay", String(getCfgBool("cfg-do-overlay", true)));
+
+        form.append("yolo_conf", String(getCfgNum("cfg-yolo-conf", 0.35)));
+        form.append("yolo_iou", String(getCfgNum("cfg-yolo-iou", 0.50)));
+        form.append("yolo_imgsz", String(getCfgNum("cfg-yolo-imgsz", 640)));
+        form.append("yolo_max_det", String(getCfgNum("cfg-yolo-maxdet", 50)));
+
+        form.append("overlay_quality", String(getCfgNum("cfg-overlay-quality", 85)));
+        form.append("overlay_max_labels", String(getCfgNum("cfg-overlay-maxlabels", 30)));
+
+        const res = await fetch(BACKEND_ANALYZE_URL, { method: "POST", body: form });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          showStatus("❌ API Fehler: " + txt, "error");
+          setText("vision-caption", "❌ API Fehler: " + txt);
+          return;
+        }
+
+        const out = await res.json();
+
+        const dets = out?.vision?.objects || [];
+        const srcW = out?.meta?.shape_bgr?.[1] || w;
+        const srcH = out?.meta?.shape_bgr?.[0] || h;
+        drawDetectionsOnOverlay(dets, srcW, srcH);
+
+        renderOverlayImageFromResponse(out);
+
+        const pretty = `✅ Analyse erfolgreich (${out.ms || '?'}ms)
+
+📊 SUMMARY:
+${JSON.stringify(out.summary || {}, null, 2)}
+
+🎯 DETECTIONS (${Array.isArray(dets) ? dets.length : 0} Objekte):
+${JSON.stringify(dets || [], null, 2)}
+
+⚙️ PARAMS:
+${JSON.stringify(out.params || {}, null, 2)}
+`;
+        setText("vision-caption", pretty);
+        showStatus(`✅ ${dets.length} Objekte erkannt in ${out.ms}ms`, "success");
+
+      } catch (e) {
+        const errMsg = "Request fehlgeschlagen: " + e.message;
+        setText("vision-caption", errMsg + "\n\nPrüfe, ob der konfigurierte Vision-Server erreichbar ist und diese Website zulässt.");
+        showStatus("❌ " + errMsg, "error");
+      }
+    }
+
+    async function resetTracking() {
+      if (!requireVisionBackend()) return;
+
+      try {
+        const res = await fetch(`${BACKEND_BASE_URL}/reset_tracks`, { method: "POST" });
+        if (res.ok) {
+          const data = await res.json();
+          showStatus("✅ " + data.message, "success");
+          clearOverlayCanvas();
+        } else {
+          showStatus("❌ Reset fehlgeschlagen", "error");
+        }
+      } catch (e) {
+        showStatus("❌ Backend nicht erreichbar", "error");
+      }
+    }
+
+    // ===========================
+    // Typing History
+    // ===========================
+    (() => {
+      const input = document.getElementById("typing-input");
+      const history = document.getElementById("typing-history");
+      const clearBtn = document.getElementById("clear-typing-history");
+      if (!input || !history) return;
+
+      let lastValue = "";
+
+      input.addEventListener("input", () => {
+        const current = input.value;
+
+        if (current.length > lastValue.length) {
+          history.value += current.slice(lastValue.length);
+        }
+
+        if (current.length < lastValue.length) {
+          history.value += "[DEL]";
+        }
+
+        lastValue = current;
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace") history.value += "[⌫]";
+        if (e.key === "Enter") history.value += "[↵]";
+        if (e.key === "Tab") history.value += "[⇥]";
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          history.value = "";
+          input.value = "";
+          lastValue = "";
+          showStatus("🗑️ Typing History geleert", "info");
+        });
+      }
+    })();
+
+    // ========= INITIALISIERUNG =========
+    document.addEventListener("DOMContentLoaded", () => {
+      updateDeviceTime();
+      collectSystemHardware();
+      collectDisplayScreen();
+      collectPerformanceInfo();
+      collectAudioVideoInfo();
+      collectNetworkInfo();
+      collectMiscInfo();
+
+      const btnOverview = document.getElementById("request-permissions-btn");
+      if (btnOverview) btnOverview.addEventListener("click", requestPermissionsOverview);
+
+      const btnGeo = document.getElementById("btn-geo");
+      if (btnGeo) btnGeo.addEventListener("click", requestGeolocation);
+
+      const btnBattery = document.getElementById("btn-battery");
+      if (btnBattery) btnBattery.addEventListener("click", requestBatteryInfo);
+
+      const btnMedia = document.getElementById("btn-media");
+      if (btnMedia) btnMedia.addEventListener("click", testCameraAndMicrophone);
+
+      const btnStop = document.getElementById("btn-media-stop");
+      if (btnStop) btnStop.addEventListener("click", stopCameraAndMicrophone);
+
+      const btnYoutube = document.getElementById("btn-youtube");
+      if (btnYoutube) btnYoutube.addEventListener("click", openYouTubeTest);
+
+      const btnLocalAI = document.getElementById("btn-local-ai");
+      if (btnLocalAI) btnLocalAI.addEventListener("click", snapshotToLocalAI);
+
+      const btnResetTracks = document.getElementById("btn-reset-tracks");
+      if (btnResetTracks) btnResetTracks.addEventListener("click", resetTracking);
+
+      setTimeout(ensureOverlayCanvasSize, 250);
+      window.addEventListener("resize", ensureOverlayCanvasSize);
+
+      setText("vision-backend-info", BACKEND_BASE_URL
+        ? `Vision-Server: ${BACKEND_ANALYZE_URL}`
+        : "Geräteinfos und Kameratest laufen im Browser. Die Bildanalyse benötigt einen separaten Vision-Server.");
+      setText("vision-caption", BACKEND_BASE_URL
+        ? "ℹ️ Kamera starten → Snapshot → Local AI"
+        : "Für die Bildanalyse ist noch kein Vision-Server verbunden.");
+    });
+  </script>
+</body>
+</html>
